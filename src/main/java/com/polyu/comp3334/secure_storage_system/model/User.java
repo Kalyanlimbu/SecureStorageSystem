@@ -1,11 +1,13 @@
 package com.polyu.comp3334.secure_storage_system.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
 
 @Entity
-//@Table(name = "users")
+@Table(name = "users")
 public class User {
 
     @Id

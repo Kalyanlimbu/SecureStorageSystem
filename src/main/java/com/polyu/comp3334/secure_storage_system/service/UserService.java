@@ -33,4 +33,9 @@ public class UserService {
         // Username doesn't exist in the database
         return false;
     }
+    public void forgotPassword(String username, String email){
+        var user = userRepository.findByUsername(username);
+
+    }
+
 }

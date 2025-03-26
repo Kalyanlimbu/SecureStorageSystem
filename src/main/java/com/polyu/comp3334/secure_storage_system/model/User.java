@@ -1,20 +1,13 @@
 package com.polyu.comp3334.secure_storage_system.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User {
-
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
-    // Bug in over here
-    private Long id;
-
     @Column(unique = true, nullable = false)
     private String username;
 
@@ -24,27 +17,35 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    // Security audit fields
+    @Column(updatable = false)
+    private LocalDateTime registerAt = LocalDateTime.now();
+
+    //@Column(updatable = false)
+    @Column
+    private LocalDateTime lastLogin;
+
+    //@Column(updatable = false)
+    @Column
+    private LocalDateTime lastLogout;
+
+    @Column
+    private boolean isAdmin = false;
+
     // Default constructor (required by JPA)
     public User() {
     }
 
     // Combined constructor (id is optional)
-    public User(Long id, String username, String password, String email) {
-        this.id = id;
+    public User(String username, String password, String email, LocalDateTime registerAt, Boolean isAdmin) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.registerAt = registerAt;
+        this.isAdmin = isAdmin;
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -69,8 +70,20 @@ public class User {
         this.email = email;
     }
 
-    @Override
-    public String toString() {
-        return "User{" + "id=" + id + ", username='" + username + '\'' + ", password='" + password + '\'' + ", email='" + email + '}';
-    }
+    public boolean isAdmin() { return isAdmin; }
+
+    public void setAdmin(boolean admin) { isAdmin = admin; }
+
+    public LocalDateTime getLastLogin() { return lastLogin; }
+
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
+
+    public LocalDateTime getLastLogout() { return lastLogout; }
+
+    public void setLastLogout(LocalDateTime lastLogout) { this.lastLogout = lastLogout; }
+
+    public LocalDateTime getRegisterAt() { return registerAt; }
+
+    public void setRegisterAt(LocalDateTime registerAt) { this.registerAt = registerAt; }
+
 }

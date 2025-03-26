@@ -1,6 +1,7 @@
 package com.polyu.comp3334.secure_storage_system;
 
 import com.polyu.comp3334.secure_storage_system.controller.UserController;
+import com.polyu.comp3334.secure_storage_system.model.User;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import com.polyu.comp3334.secure_storage_system.service.FileService;
 import com.polyu.comp3334.secure_storage_system.service.UserService;
@@ -16,10 +17,13 @@ import java.util.Scanner;
 @SpringBootApplication
 public class SecureStorageSystemApplication {
 	@Autowired
-	private UserService service;
+	private UserService userService;
 
 	@Autowired
 	private FileService fileService;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SecureStorageSystemApplication.class, args);
@@ -29,18 +33,15 @@ public class SecureStorageSystemApplication {
 		return args -> {
 			Scanner scanner = new Scanner(System.in);
 			while (true) {
-				System.out.println("1. Register 2. Login 3. Upload 4. Download 5. Forgot password  ...");
+				System.out.println("1. Register 2. Login 3. Upload 4. Download 5. Change password  ...");
 				String choice = scanner.nextLine();
 				// Handle choices (you’ll add logic here later)
 				switch (choice) {
 					case "1":
 						System.out.println("Please enter the credentials");
-						System.out.print("Please enter the ID: ");
-						Long id = scanner.nextLong();
-						scanner.nextLine(); // Consume the newline character
 						System.out.print("Please enter the username: ");
 						String name = scanner.nextLine();
-						while(service.usernameExists(name)){
+						while(userService.usernameExists(name)){
 							System.out.println("The entered username is already in existence.");
 							System.out.println("Please enter another username: ");
 							name = scanner.nextLine();
@@ -49,7 +50,7 @@ public class SecureStorageSystemApplication {
 						String password = scanner.nextLine();
 						System.out.print("Please enter the gmail: ");
 						String gmail = scanner.nextLine();
-						service.registerUser(id, name, password, gmail);
+						userService.registerUser(name, password, gmail);
 						System.out.print("Since you have registered, please log in: ");
 						break;
 					case "2":
@@ -58,10 +59,10 @@ public class SecureStorageSystemApplication {
 						name = scanner.nextLine();
 						System.out.println("Please enter your password: ");
 						password = scanner.nextLine();
-						boolean check = service.loginUser(name, password);
-						if(service.loginUser(name, password)){
+						boolean check = userService.loginUser(name, password);
+						if(userService.loginUser(name, password)){
 							System.out.println("You have successfully logged into the system.");
-							System.out.println("Here is you account details: " + " ");
+							userService.loggedIn(name);
 						}else{
 							System.out.println("The credentials are incorrect. Hence, you cannot acces sthe system.");
 						}
@@ -83,13 +84,10 @@ public class SecureStorageSystemApplication {
 						fileService.downloadFile(name, path);
 						break;
 					case "5":
-						System.out.println("Since you have forgot the password, enter your username and gmail .");
+						System.out.println("Since you want to change the password, enter your username and password .");
 						System.out.println("Please enter your username:");
 						name = scanner.nextLine();
-						System.out.println("Please enter your e-mail");
-						String mail = scanner.nextLine();
-
-						//fileService.downloadFile(name, mail);
+						userService.changePassword(name);
 						break;
 					default:
 						System.out.println("Invalid choice, try again");

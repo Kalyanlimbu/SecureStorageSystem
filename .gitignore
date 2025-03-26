@@ -36,4 +36,4 @@ build/
 /.projectile
 
 ### Authentication ###
-/env.properties
+/src/main/resources/env.properties

@@ -29,7 +29,7 @@ public class SecureStorageSystemApplication {
 		return args -> {
 			Scanner scanner = new Scanner(System.in);
 			while (true) {
-				System.out.println("1. Register 2. Login 3. Upload  4. Download ...");
+				System.out.println("1. Register 2. Login 3. Upload 4. Download 5. Forgot password  ...");
 				String choice = scanner.nextLine();
 				// Handle choices (you’ll add logic here later)
 				switch (choice) {
@@ -81,6 +81,15 @@ public class SecureStorageSystemApplication {
 						System.out.println("Please enter the file name:");
 						name = scanner.nextLine();
 						fileService.downloadFile(name, path);
+						break;
+					case "5":
+						System.out.println("Since you have forgot the password, enter your username and gmail .");
+						System.out.println("Please enter your username:");
+						name = scanner.nextLine();
+						System.out.println("Please enter your e-mail");
+						String mail = scanner.nextLine();
+
+						//fileService.downloadFile(name, mail);
 						break;
 					default:
 						System.out.println("Invalid choice, try again");

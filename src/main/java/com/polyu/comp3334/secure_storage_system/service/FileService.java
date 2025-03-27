@@ -47,8 +47,13 @@ public class FileService {
             }
         }
         // Get the file name
-        System.out.print("Please enter the file name: ");
-        String fileName = scanner.nextLine();
+        String fileName;
+        while(true){
+            System.out.print("Please enter the file name: ");
+            fileName = scanner.nextLine();
+            if(fileRepository.findByFileName(fileName) == null) break;
+            System.out.println("The file name already exists. Please enter another file name.");
+        }
         // Read file bytes and proceed with encryption and storage
         byte[] fileData = Files.readAllBytes(path);
         byte[] salt = generateRandomBytes(16);
@@ -133,36 +138,41 @@ public class FileService {
     }
 
     @Transactional
-    public void changeFileName(Scanner scanner, User user){
+    public void renameFile(Scanner scanner, User user) {
         List<File> files = getAllFilesByOwner(user);
-        if(!(files.isEmpty())){
-            System.out.println("Here are the list of files you have access to: ");
-            int i = 1;
-            for(File f:files){
-                System.out.println(i++ + ". " + f.getFileName());
-            }
-            System.out.print("Enter the filename you want to rename: ");
-            String filename = scanner.nextLine();
-            File oldFile = fileRepository.findByFileName(filename);
-            while(oldFile == null){
-                System.out.print("The file does not exist. Please enter a valid filename: ");
-                filename = scanner.nextLine();
-                oldFile = fileRepository.findByFileName(filename);
-            }
-            System.out.print("Enter the new name for the file: ");
-            String newFileName = scanner.nextLine();
-            var newFile = new File();
-            newFile.setFileData(oldFile.getFileData());
-            newFile.setFileName(newFileName);
-            newFile.setSalt(oldFile.getSalt());
-            newFile.setIv(oldFile.getIv());
-            newFile.setOwner(oldFile.getOwner());
-            fileRepository.delete(oldFile);
-            fileRepository.save(newFile);
-            System.out.println("The file " + oldFile.getFileName() + " has been successfully renamed into " + newFile.getFileName() + ".");
-        }else{
+        if (files.isEmpty()) {
             System.out.println("You do not have access to any files. Hence you cannot rename anything.");
+            return;
         }
+
+        System.out.println("Here are the list of files you have access to: ");
+        int i = 1;
+        for (File f : files) {
+            System.out.println(i++ + ". " + f.getFileName());
+        }
+
+        File oldFile;
+        String filename;
+        while (true) {
+            System.out.print("Enter the file name you want to rename: ");
+            filename = scanner.nextLine();
+            oldFile = fileRepository.findByFileName(filename);
+            if (oldFile != null) {
+                break;
+            }
+            System.out.println("The file does not exist. Please enter a valid filename.");
+        }
+
+        String newFileName;
+        while (true) {
+            System.out.print("Enter the new name for the file: ");
+            newFileName = scanner.nextLine();
+            if (fileRepository.findByFileName(newFileName) == null) {
+                break;
+            }
+            System.out.println("The file name already exists. Please enter another file name.");
+        }
+        changeFilename(newFileName, oldFile);
     }
 
     @Transactional
@@ -187,6 +197,19 @@ public class FileService {
         }else{
             System.out.println("You do not have access to any files. Hence you cannot delete anything.");
         }
+    }
+
+    @Transactional
+    private void changeFilename(String newFileName, File oldFile){
+        var newFile = new File();
+        newFile.setFileData(oldFile.getFileData());
+        newFile.setFileName(newFileName);
+        newFile.setSalt(oldFile.getSalt());
+        newFile.setIv(oldFile.getIv());
+        newFile.setOwner(oldFile.getOwner());
+        fileRepository.delete(oldFile);
+        fileRepository.save(newFile);
+        System.out.println("The file " + oldFile.getFileName() + " has been successfully renamed into " + newFile.getFileName() + ".");
     }
 
     //    /**

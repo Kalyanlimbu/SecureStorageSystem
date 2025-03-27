@@ -227,7 +227,7 @@ public class ConsoleView {
     }
 
     private void handleRenameFiles(Scanner scanner, User owner){
-        fileService.changeFileName(scanner, owner);
+        fileService.renameFile(scanner, owner);
     }
 
     private void handleDeleteFiles(Scanner scanner, User owner){

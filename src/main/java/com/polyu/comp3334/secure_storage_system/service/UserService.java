@@ -36,12 +36,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-    @Transactional
-    public void deleteUser(String username){
-        User user = userRepository.findByUsername(username);
-        userRepository.delete(user);
-    }
-
     public Optional<User> userAuthentication(String username, String password) {
         User user = userRepository.findByUsername(username);
         if (user != null && encoder.matches(password, user.getPassword())) {

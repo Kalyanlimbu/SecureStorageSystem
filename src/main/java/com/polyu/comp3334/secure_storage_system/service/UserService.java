@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.Console;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -50,31 +50,57 @@ public class UserService {
 
     }
 
-    public void changePassword(Scanner scanner,User user) {
+    public void changePassword(Scanner scanner, User user) {
         if (user == null) {
             System.out.println("User not found.");
             return;
         }
-        System.out.print("Enter your current password: ");
-        String currentPassword = scanner.nextLine();
+
+        Console console = System.console();
+        String currentPassword;
+
+        if (console != null) {
+            char[] currentPasswordArray = console.readPassword("Enter your current password: ");
+            currentPassword = new String(currentPasswordArray);
+        } else {
+            System.out.print("Enter your current password: ");
+            currentPassword = scanner.nextLine();
+        }
+
         if (!encoder.matches(currentPassword, user.getPassword())) {
             System.out.println("Incorrect password.");
             return;
         }
+
         String newPassword;
         while (true) {
-            System.out.print("Enter new password: ");
-            String password1 = scanner.nextLine();
+            if (console != null) {
+                // Use Console for secure input
+                char[] newPasswordArray = console.readPassword("Enter new password: ");
+                String password1 = new String(newPasswordArray);
 
-            System.out.print("Confirm new password: ");
-            String password2 = scanner.nextLine();
+                char[] confirmPasswordArray = console.readPassword("Confirm new password: ");
+                String password2 = new String(confirmPasswordArray);
 
-            if (password1.equals(password2)) {
-                newPassword = password1;
-                break;
+                if (password1.equals(password2)) {
+                    newPassword = password1;
+                    break;
+                }
+            } else {
+                System.out.print("Enter new password: ");
+                String password1 = scanner.nextLine();
+
+                System.out.print("Confirm new password: ");
+                String password2 = scanner.nextLine();
+
+                if (password1.equals(password2)) {
+                    newPassword = password1;
+                    break;
+                }
             }
             System.out.println("Passwords do not match. Please try again.");
         }
+
         user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
         System.out.println("Password changed successfully.");

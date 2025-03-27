@@ -85,4 +85,16 @@ public class User {
 
     public void setRegisterAt(LocalDateTime registerAt) { this.registerAt = registerAt; }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "email='" + email + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", registerAt=" + registerAt +
+                ", lastLogin=" + lastLogin +
+                ", lastLogout=" + lastLogout +
+                ", isAdmin=" + isAdmin +
+                '}';
+    }
 }

@@ -10,4 +10,5 @@ import java.util.List;
 public interface FileRepository extends JpaRepository<File, String> {
     File findByFileName(String fileName);
     List<File> findByOwner(User owner);
+    List<File> findBySharedWithContaining(User designatedUser);
 }

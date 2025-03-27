@@ -183,6 +183,7 @@ public class ConsoleView {
                     break;
                 case "3":
                     handleDisplayFiles(user);
+                    handleDisplaySharedFiles(user);
                     break;
                 case "4":
                     handleRenameFiles(scanner, user);
@@ -237,12 +238,15 @@ public class ConsoleView {
         fileService.shareFile(scanner, owner);
     }
 
-
     private void handleChangePassword(Scanner scanner, User user){
         userService.changePassword(scanner, user);
     }
 
     private void handleUserLogout(User user){
         userService.recordLogout(user);
+    }
+
+    private void handleDisplaySharedFiles(User owner){
+        fileService.displaySharedFiles(owner);
     }
 }

@@ -36,6 +36,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public Optional<User> userAuthentication(String username, String password) {
         User user = userRepository.findByUsername(username);
         if (user != null && encoder.matches(password, user.getPassword())) {
@@ -44,12 +45,14 @@ public class UserService {
         return Optional.empty();
     }
 
+    @Transactional
     // Need to implement OTP here.
     public void forgotPassword(String username, String email){
         var user = userRepository.findByUsername(username);
 
     }
 
+    @Transactional
     public void changePassword(Scanner scanner, User user) {
         if (user == null) {
             System.out.println("User not found.");
@@ -107,12 +110,14 @@ public class UserService {
     }
 
     //Tracks login of the user
+    @Transactional
     public void recordLogin(User user){
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
     }
 
     //Tracks logout of the user
+    @Transactional
     public void recordLogout(User user){
         user.setLastLogout(LocalDateTime.now());
         userRepository.save(user);

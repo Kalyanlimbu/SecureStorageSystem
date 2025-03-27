@@ -3,6 +3,7 @@ package com.polyu.comp3334.secure_storage_system.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
@@ -28,10 +29,9 @@ public class File {
 
     private LocalDateTime uploadTime;
 
-    //@ElementCollection(fetch = FetchType.EAGER)
-    //@CollectionTable(name = "file_shared_with", joinColumns = @JoinColumn(name = "file_id"))
+    @ElementCollection
     @Column
-    private List<String> sharedWith;
+    private List<User> sharedWith;
 
     // Constructors
     public File() {}
@@ -58,19 +58,19 @@ public class File {
     }
     public User getOwner() { return owner; }
 
-    public void setSharedWith(List<String> sharedWith) {
+    public void setSharedWith(List<User> sharedWith) {
         this.sharedWith = sharedWith;
     }
 
-    public void addSharedWith(String designatedUsername) {
+    public void addSharedWith(User designatedUser) {
         if (sharedWith == null) {
             sharedWith = new ArrayList<>();
         }
-        if (!sharedWith.contains(designatedUsername)) {
-            sharedWith.add(designatedUsername);
+        if (!sharedWith.contains(designatedUser)) {
+            sharedWith.add(designatedUser);
         }
     }
-    public List<String> getSharedWith() {
+    public List<User> getSharedWith() {
         return sharedWith;
     }
 
@@ -82,4 +82,17 @@ public class File {
 
     public LocalDateTime getUploadTime() { return uploadTime; }
     public void setUploadTime(LocalDateTime uploadTime) { this.uploadTime = uploadTime; }
+
+    @Override
+    public String toString() {
+        return "File{" +
+                "fileData=" + Arrays.toString(fileData) +
+                ", fileName='" + fileName + '\'' +
+                ", owner=" + owner +
+                ", salt=" + Arrays.toString(salt) +
+                ", iv=" + Arrays.toString(iv) +
+                ", uploadTime=" + uploadTime +
+                ", sharedWith=" + sharedWith +
+                '}';
+    }
 }

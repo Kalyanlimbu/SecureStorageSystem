@@ -9,7 +9,6 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -192,7 +191,7 @@ public class ConsoleView {
                     handleDeleteFiles(scanner, user);
                     break;
                 case "6":
-                    //handle sharing
+                    handleShareFile(scanner, user);
                     break;
                 case "7":
                     handleChangePassword(scanner, user);
@@ -233,6 +232,11 @@ public class ConsoleView {
     private void handleDeleteFiles(Scanner scanner, User owner){
         fileService.deleteFile(scanner, owner);
     }
+
+    private void handleShareFile(Scanner scanner, User owner){
+        fileService.shareFile(scanner, owner);
+    }
+
 
     private void handleChangePassword(Scanner scanner, User user){
         userService.changePassword(scanner, user);

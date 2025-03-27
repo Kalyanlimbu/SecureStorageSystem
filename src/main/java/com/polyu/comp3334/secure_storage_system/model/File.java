@@ -2,6 +2,8 @@ package com.polyu.comp3334.secure_storage_system.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "files")
@@ -25,8 +27,11 @@ public class File {
     private byte[] iv;   // Initialization vector for encryption
 
     private LocalDateTime uploadTime;
+
+    //@ElementCollection(fetch = FetchType.EAGER)
+    //@CollectionTable(name = "file_shared_with", joinColumns = @JoinColumn(name = "file_id"))
     @Column
-    private String sharedWith;
+    private List<String> sharedWith;
 
     // Constructors
     public File() {}
@@ -38,6 +43,7 @@ public class File {
         this.salt = salt;
         this.iv = iv;
         this.uploadTime = LocalDateTime.now();
+        this.sharedWith = new ArrayList<>();
     }
 
     // Getters and Setters
@@ -52,12 +58,20 @@ public class File {
     }
     public User getOwner() { return owner; }
 
-    public String getSharedWith() {
-        return sharedWith;
+    public void setSharedWith(List<String> sharedWith) {
+        this.sharedWith = sharedWith;
     }
 
-    public void setSharedWith(String sharedWith) {
-        this.sharedWith = sharedWith;
+    public void addSharedWith(String designatedUsername) {
+        if (sharedWith == null) {
+            sharedWith = new ArrayList<>();
+        }
+        if (!sharedWith.contains(designatedUsername)) {
+            sharedWith.add(designatedUsername);
+        }
+    }
+    public List<String> getSharedWith() {
+        return sharedWith;
     }
 
     public byte[] getSalt() { return salt; }

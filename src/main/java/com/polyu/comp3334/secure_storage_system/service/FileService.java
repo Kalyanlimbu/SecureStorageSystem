@@ -6,6 +6,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import com.polyu.comp3334.secure_storage_system.model.*;
 import com.polyu.comp3334.secure_storage_system.repository.FileRepository;
+import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,9 @@ public class FileService {
 
     @Autowired
     private FileRepository fileRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // Upload file with encryption
     public void uploadFile(Scanner scanner, User owner) throws Exception {
@@ -117,24 +121,28 @@ public class FileService {
     //Displays all the files of owner
     public Boolean displayAccessibleFiles(User owner, String situation){
         List<File> files = getAllFilesByOwner(owner);
-        if(!(files.isEmpty())){
+        if(files.isEmpty()){
+            System.out.println("You do not have access to any files.");
+            if(situation.equals("download")){
+                System.out.println("Hence, you cannot download any file.");
+                return false;
+            }
+        }
+        else {
             if(situation.equals("download")){
                 System.out.println("Here are the list of files you can download.");
-            }else {
+            }else if(situation.equals("sharingFiles")){
+                System.out.println("Here are the list of files you can share.");
+            }
+            else {
                 System.out.println("Here are the list of files you have access to: ");
             }
             int i = 1;
             for(File f:files){
                 System.out.println(i++ + ". " + f.getFileName());
             }
-            return true;
-        }else{
-            System.out.println("You do not have access to any files.");
-            if(situation.equals("download")){
-                System.out.println("Hence, you cannot download any file.");
-            }
-            return false;
         }
+        return true;
     }
 
     @Transactional
@@ -212,9 +220,9 @@ public class FileService {
         System.out.println("The file " + oldFile.getFileName() + " has been successfully renamed into " + newFile.getFileName() + ".");
     }
 
-    //    /**
-//     * Display all files shared with a specific user
-//     */
+        /**
+     * Display all files shared with a specific user
+     */
 //    public List<File> getSharedFilesWithUser(String username) {
 //        return fileRepository.findBySharedWithContaining(username);
 //    }
@@ -246,7 +254,30 @@ public class FileService {
 //            );
 //        }
 //    }
-//
+
+    public void shareFile(Scanner scanner, User owner){
+        String designatedUsername;
+        while(true){
+            System.out.print("Please enter the username of the designated user with whom you would like to share your file: ");
+            designatedUsername = scanner.nextLine();
+            var designatedUser = userRepository.findByUsername(designatedUsername);
+            if(designatedUser != null) break;
+            System.out.println("The username does not exists. Please enter a valid username.");
+        }
+        displayAccessibleFiles(owner, "sharingFiles");
+        String fileNameToShare;
+        File fileToShare;
+        while(true){
+            System.out.print("Please enter the file name you want to share: ");
+            fileNameToShare = scanner.nextLine();
+            fileToShare = fileRepository.findByFileName(fileNameToShare);
+            if(fileToShare != null) break;
+            System.out.println("The file does not exist. Please enter a valid filename.");
+        }
+        fileToShare.addSharedWith(designatedUsername);
+        fileRepository.save(fileToShare);
+        System.out.println("The file " + fileToShare.getFileName() + " has been successfully shared to " + designatedUsername);
+    }
 
     // Helper method to generate encryption key
     private SecretKey generateKeyFromPassword(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {

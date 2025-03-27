@@ -2,12 +2,14 @@ package com.polyu.comp3334.secure_storage_system.service;
 
 import com.polyu.comp3334.secure_storage_system.model.User;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Scanner;
 
 //public class UserService implements UserDetailsService {
@@ -23,22 +25,29 @@ public class UserService {
     //2^12 = 4,096 rounds, controlling how computationally expensive (and thus secure) the hashing is.
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
+    @Transactional
     public boolean usernameExists(String username) {
         return userRepository.existsByUsername(username);
     }
 
+    @Transactional
     public void registerUser(String username, String password, String email) {
         User user = new User(username, encoder.encode(password), email, LocalDateTime.now(), false);
-        System.out.println(user);
         userRepository.save(user);
     }
-    public boolean loginUser(String username, String password) {
+
+    @Transactional
+    public void deleteUser(String username){
         User user = userRepository.findByUsername(username);
-        if (user != null) {
-            return encoder.matches(password, user.getPassword());
+        userRepository.delete(user);
+    }
+
+    public Optional<User> userAuthentication(String username, String password) {
+        User user = userRepository.findByUsername(username);
+        if (user != null && encoder.matches(password, user.getPassword())) {
+            return Optional.of(user);
         }
-        // Username doesn't exist in the database
-        return false;
+        return Optional.empty();
     }
 
     // Need to implement OTP here.
@@ -47,9 +56,7 @@ public class UserService {
 
     }
 
-    public void changePassword(String username) {
-        Scanner scanner = new Scanner(System.in);
-        User user = userRepository.findByUsername(username);
+    public void changePassword(Scanner scanner,User user) {
         if (user == null) {
             System.out.println("User not found.");
             return;
@@ -57,7 +64,7 @@ public class UserService {
         System.out.print("Enter your current password: ");
         String currentPassword = scanner.nextLine();
         if (!encoder.matches(currentPassword, user.getPassword())) {
-            System.out.println("Incorrect current password.");
+            System.out.println("Incorrect password.");
             return;
         }
         String newPassword;
@@ -79,50 +86,17 @@ public class UserService {
         System.out.println("Password changed successfully.");
     }
 
-    // This method will track login and logout
-    public void loggedIn(String username){
-        User user = userRepository.findByUsername(username);
+    //Tracks login of the user
+    public void recordLogin(User user){
         user.setLastLogin(LocalDateTime.now());
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.println("1. Upload File 2. Download File 3. Display Accessible Files 4. Rename File 5. Delete file 6. Logout");
-            String choice = scanner.nextLine();
-            String name, path;
-            switch (choice) {
-                case "1":
-                    System.out.println("Please enter the correct file path and file name to upload the file: ");
-                    System.out.println("Please enter the file path:");
-                    path = scanner.nextLine();
-                    System.out.println("Please enter the file name:");
-                    name = scanner.nextLine();
-                    //fileService.uploadFile(path, name);
-                    break;
-                case "2":
-                    System.out.println("You are here to download the file by giving the filename you want to download and the destination path where you want it to be downloaded.");
-                    System.out.println("Please enter the file path:");
-                    path = scanner.nextLine();
-                    System.out.println("Please enter the file name:");
-                    name = scanner.nextLine();
-                    //fileService.downloadFile(name, path);
-                    break;
-                case "3":
-                    // displaying files
+        userRepository.save(user);
+    }
 
-
-                    break;
-                case "4":
-                    //display files and rename them
-                    break;
-                case "5":
-                    //display files and delete it
-                    break;
-                case "6":
-                    user.setLastLogout(LocalDateTime.now());
-
-                default:
-                    System.out.println("Invalid choice, try again");
-            }
-        }
-    };
-    //userRepository.save(user);
+    //Tracks logout of the user
+    public void recordLogout(User user){
+        user.setLastLogout(LocalDateTime.now());
+        userRepository.save(user);
+        System.out.println("You've been logged out.");
+        System.out.println("*******************************************************");
+    }
 }

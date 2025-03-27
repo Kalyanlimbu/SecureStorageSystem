@@ -1,11 +1,10 @@
 package com.polyu.comp3334.secure_storage_system.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class User {
     @Id
     @Column(unique = true, nullable = false)

@@ -143,16 +143,23 @@ public class FileService {
             }
             System.out.print("Enter the filename you want to rename: ");
             String filename = scanner.nextLine();
-            File file = fileRepository.findByFileName(filename);
-            while(file == null){
+            File oldFile = fileRepository.findByFileName(filename);
+            while(oldFile == null){
                 System.out.print("The file does not exist. Please enter a valid filename: ");
                 filename = scanner.nextLine();
-                file = fileRepository.findByFileName(filename);
+                oldFile = fileRepository.findByFileName(filename);
             }
             System.out.print("Enter the new name for the file: ");
             String newFileName = scanner.nextLine();
-            file.setFileName(newFileName);
-            fileRepository.save(file);
+            var newFile = new File();
+            newFile.setFileData(oldFile.getFileData());
+            newFile.setFileName(newFileName);
+            newFile.setSalt(oldFile.getSalt());
+            newFile.setIv(oldFile.getIv());
+            newFile.setOwner(oldFile.getOwner());
+            fileRepository.delete(oldFile);
+            fileRepository.save(newFile);
+            System.out.println("The file " + oldFile.getFileName() + " has been successfully renamed into " + newFile.getFileName() + ".");
         }else{
             System.out.println("You do not have access to any files. Hence you cannot rename anything.");
         }
@@ -181,6 +188,42 @@ public class FileService {
             System.out.println("You do not have access to any files. Hence you cannot delete anything.");
         }
     }
+
+    //    /**
+//     * Display all files shared with a specific user
+//     */
+//    public List<File> getSharedFilesWithUser(String username) {
+//        return fileRepository.findBySharedWithContaining(username);
+//    }
+//
+//    /**
+//     * Display all files accessible by a user (both owned and shared)
+//     */
+//    public void displayAllUserFiles(String username) {
+//        List<File> ownedFiles = getAllFilesByUser(username);
+//        List<File> sharedFiles = getSharedFilesWithUser(username);
+//
+//        System.out.println("\n=== Files owned by " + username + " ===");
+//        if (ownedFiles.isEmpty()) {
+//            System.out.println("No files owned");
+//        } else {
+//            ownedFiles.forEach(file ->
+//                    System.out.println("- " + file.getFileName() +
+//                            " (Uploaded: " + file.getUploadTime() + ")")
+//            );
+//        }
+//
+//        System.out.println("\n=== Files shared with " + username + " ===");
+//        if (sharedFiles.isEmpty()) {
+//            System.out.println("No shared files");
+//        } else {
+//            sharedFiles.forEach(file ->
+//                    System.out.println("- " + file.getFileName() +
+//                            " (Owner: " + file.getOwner() + ")")
+//            );
+//        }
+//    }
+//
 
     // Helper method to generate encryption key
     private SecretKey generateKeyFromPassword(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {

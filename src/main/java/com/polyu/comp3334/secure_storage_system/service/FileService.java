@@ -108,7 +108,7 @@ public class FileService {
             }
         }
         // 3. Recreate encryption key
-        SecretKey secretKey = generateKeyFromPassword(owner.getPassword(), file.getSalt());
+        SecretKey secretKey = generateKeyFromPassword(file.getOwner().getPassword(), file.getSalt());
         // 4. Decrypt the file
         byte[] decryptedData = decrypt(file.getFileData(), secretKey, file.getIv());
         // 5. Save to destination
@@ -136,7 +136,7 @@ public class FileService {
         }
         else {
             if(situation.equals("download")){
-                System.out.println("Here is the list of files you can download.");
+                System.out.println("Here is the list of files you can download that you have uploaded in the past:");
             }else if(situation.equals("sharingFiles")){
                 System.out.println("Here is the list of files you can share.");
             }

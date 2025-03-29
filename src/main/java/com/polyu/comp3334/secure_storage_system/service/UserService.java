@@ -4,11 +4,18 @@ import com.polyu.comp3334.secure_storage_system.model.User;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.Console;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -21,25 +28,105 @@ public class UserService {
     @Autowired
     private FileService fileService;
 
-    //BCrypt uses the Blowfish cipher internally, adapted into a one-way hashing function.
-    //2^12 = 4,096 rounds, controlling how computationally expensive (and thus secure) the hashing is.
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    private static final String HMAC_ALGORITHM="HmacSHA256";
+    private static final int SALT_LENGTH = 32;
+    private static final int KEY_LENGTH = 32;
+    private static final int ITERATION_COUNT = 10000;
+
+
+    private byte[] generateRandomBytes(int length) {
+        byte[] bytes = new byte[length];
+        new SecureRandom().nextBytes(bytes);
+        return bytes;
+    }
+
+    private byte[] HmacSHA256(byte[] data, byte[] key) {
+        try {
+            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(key, HMAC_ALGORITHM);
+            mac.init(secretKey);
+            return mac.doFinal(data);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {;
+            throw new RuntimeException("HMAC256 Computation failed", e);
+        }
+    }
+
+    private String hashPassword(String password, byte[] salt){
+        byte[] hmacKey = generateRandomBytes(KEY_LENGTH);
+        String saltBase64 = Base64.getEncoder().encodeToString(salt);
+        //Initial hash
+        byte[] hash = HmacSHA256(hmacKey, (password + saltBase64).getBytes(StandardCharsets.UTF_8));
+        //Iterate the hash
+        for (int i = 0; i < ITERATION_COUNT; i++) {
+            hash = HmacSHA256(hmacKey, hash);
+        }
+        
+        return Base64.getEncoder().encodeToString(hmacKey) + ":" 
+             + saltBase64 + ":" 
+             + Base64.getEncoder().encodeToString(hash);
+    }
+
+    private boolean verifyPassword(String password, String storedHash) {
+        String[] parts = storedHash.split(":");
+        if (parts.length != 3) return false;
+
+        byte[] hmacKey = Base64.getDecoder().decode(parts[0]);
+        byte[] salt = Base64.getDecoder().decode(parts[1]);
+        byte[] originalHash = Base64.getDecoder().decode(parts[2]);
+
+        // Recompute the hash
+        String saltBase64 = Base64.getEncoder().encodeToString(salt);
+        byte[] computedHash = HmacSHA256(hmacKey, (password + saltBase64).getBytes(StandardCharsets.UTF_8));
+
+        for (int i = 0; i < ITERATION_COUNT; i++) {
+            computedHash = HmacSHA256(hmacKey, computedHash);
+        }
+        return slowEquals(originalHash, computedHash);
+    }
+// Time comparison to prevent timing attacks
+    private boolean slowEquals(byte[] a, byte[] b) {
+        int diff = a.length ^ b.length;
+        for (int i = 0; i < a.length && i < b.length; i++) {
+            diff |= a[i] ^ b[i];
+        }
+        return diff == 0;
+    }
 
     @Transactional
-    public boolean usernameExists(String username) {
+    public boolean usernameExists(String username){
         return userRepository.existsByUsername(username);
     }
 
     @Transactional
     public void registerUser(String username, String password, String email) {
-        User user = new User(username, encoder.encode(password), email, LocalDateTime.now(), false);
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
+        if (password == null || password.length() < 8) {
+            throw new IllegalArgumentException("Password must be at least 8 characters");
+        }
+        if (email == null || !email.contains("@")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        if (usernameExists(username)) {
+            throw new IllegalStateException("Username already exists");
+        }
+
+        byte[] salt = generateRandomBytes(SALT_LENGTH);
+        String hashedPassword = hashPassword(password, salt);
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(hashedPassword);
+        user.setEmail(email);
+        user.setRegisterAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
     @Transactional
     public Optional<User> userAuthentication(String username, String password) {
         User user = userRepository.findByUsername(username);
-        if (user != null && encoder.matches(password, user.getPassword())) {
+        if (user != null && verifyPassword(password, user.getPassword())) {
             return Optional.of(user);
         }
         return Optional.empty();
@@ -70,25 +157,22 @@ public class UserService {
             currentPassword = scanner.nextLine();
         }
 
-        if (!encoder.matches(currentPassword, user.getPassword())) {
+        if (!verifyPassword(currentPassword, user.getPassword())) {
             System.out.println("Incorrect password.");
             return;
         }
 
         String newPassword;
         while (true) {
-            if (console != null) {
                 // Use Console for secure input
-                char[] newPasswordArray = console.readPassword("Enter new password: ");
-                String password1 = new String(newPasswordArray);
+                if (console != null) {
+                    char[] newPasswordArray = console.readPassword("Enter new password: ");
+                    char[] confirmArray = console.readPassword("Confirm new password: ");
 
-                char[] confirmPasswordArray = console.readPassword("Confirm new password: ");
-                String password2 = new String(confirmPasswordArray);
-
-                if (password1.equals(password2)) {
-                    newPassword = password1;
-                    break;
-                }
+                    if (Arrays.equals(newPasswordArray, confirmArray)) {
+                        newPassword = new String(newPasswordArray);
+                        break;
+                    }
             } else {
                 System.out.print("Enter new password: ");
                 String password1 = scanner.nextLine();
@@ -104,7 +188,8 @@ public class UserService {
             System.out.println("Passwords do not match. Please try again.");
         }
 
-        user.setPassword(encoder.encode(newPassword));
+        byte[] newSalt = generateRandomBytes(SALT_LENGTH);
+        user.setPassword(hashPassword(newPassword, newSalt));
         userRepository.save(user);
         System.out.println("Password changed successfully.");
     }

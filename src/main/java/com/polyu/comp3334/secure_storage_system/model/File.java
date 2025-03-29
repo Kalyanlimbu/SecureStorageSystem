@@ -9,8 +9,11 @@ import java.util.List;
 @Entity
 @Table(name = "files")
 public class File {
-    @Id
-    @Column(nullable = false, unique = true)
+    @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "File_Id")
+    private Long id;
+
+    @Column(nullable = false)
     private String fileName;
 
     //Foreign Key

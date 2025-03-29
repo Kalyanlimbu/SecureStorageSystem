@@ -56,7 +56,7 @@ public class FileService {
         while(true){
             System.out.print("Please enter the file name: ");
             fileName = scanner.nextLine();
-            if(fileRepository.findByFileName(fileName) == null) break;
+            if(!fileRepository.existsByFileNameAndOwner(fileName, owner)) break;
             System.out.println("The file name already exists. Please enter another file name.");
         }
         // Read file bytes and proceed with encryption and storage

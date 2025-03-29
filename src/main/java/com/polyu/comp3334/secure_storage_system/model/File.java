@@ -10,7 +10,11 @@ import java.util.List;
 @Table(name = "files")
 public class File {
     @Id
-    @Column(nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "File_Id")
+    private Long id;
+
+    @Column(nullable = false)
     private String fileName;
 
     //Foreign Key
@@ -47,6 +51,15 @@ public class File {
     }
 
     // Getters and Setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getFileName() { return fileName; }
     public void setFileName(String fileName) { this.fileName = fileName; }
 

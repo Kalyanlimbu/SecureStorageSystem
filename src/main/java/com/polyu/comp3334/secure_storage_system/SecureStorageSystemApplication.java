@@ -1,6 +1,6 @@
 package com.polyu.comp3334.secure_storage_system;
 
-import com.polyu.comp3334.secure_storage_system.view.ConsoleView;
+//import com.polyu.comp3334.secure_storage_system.view.ConsoleView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 public class SecureStorageSystemApplication {
 	@Autowired
-	private ConsoleView consoleView;
+	//private ConsoleView consoleView;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SecureStorageSystemApplication.class, args);
 	}
-	@Bean
-	public CommandLineRunner commandLineRunner() {
-		return args -> consoleView.start();
-	}
+	//@Bean
+	//public CommandLineRunner commandLineRunner() {
+		//return args -> consoleView.start();
+	//}
 };

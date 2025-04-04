@@ -7,8 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FileRepository extends JpaRepository<File, String> {
+public interface FileRepository extends JpaRepository<File, Long> {
     File findByFileName(String fileName);
+    File findByFileNameAndOwner(String filename, User owner);
     List<File> findByOwner(User owner);
     List<File> findBySharedWithContaining(User designatedUser);
     Boolean existsByFileNameAndOwner(String fileName, User owner);

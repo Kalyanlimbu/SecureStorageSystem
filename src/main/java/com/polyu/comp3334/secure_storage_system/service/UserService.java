@@ -16,7 +16,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Optional;
 import java.util.Scanner;
 
 //public class UserService implements UserDetailsService {
@@ -123,13 +122,22 @@ public class UserService {
         userRepository.save(user);
     }
 
+//    @Transactional
+//    public Optional<User> userAuthentication(String username, String password) {
+//        User user = userRepository.findByUsername(username);
+//        if (user != null && verifyPassword(password, user.getPassword())) {
+//            return Optional.of(user);
+//        }
+//        return Optional.empty();
+//    }
     @Transactional
-    public Optional<User> userAuthentication(String username, String password) {
+    public Boolean userAuthentication(String username, String password){
         User user = userRepository.findByUsername(username);
-        if (user != null && verifyPassword(password, user.getPassword())) {
-            return Optional.of(user);
+        if (user != null && password.equals(user.getPassword())){
+            recordLogin(user);
+            return true;
         }
-        return Optional.empty();
+        return false;
     }
 
     @Transactional
@@ -139,59 +147,66 @@ public class UserService {
 
     }
 
+//    @Transactional
+//    public void changePassword(Scanner scanner, User user) {
+//        if (user == null) {
+//            System.out.println("User not found.");
+//            return;
+//        }
+//
+//        Console console = System.console();
+//        String currentPassword;
+//
+//        if (console != null) {
+//            char[] currentPasswordArray = console.readPassword("Enter your current password: ");
+//            currentPassword = new String(currentPasswordArray);
+//        } else {
+//            System.out.print("Enter your current password: ");
+//            currentPassword = scanner.nextLine();
+//        }
+//
+//        if (!verifyPassword(currentPassword, user.getPassword())) {
+//            System.out.println("Incorrect password.");
+//            return;
+//        }
+//
+//        String newPassword;
+//        while (true) {
+//                // Use Console for secure input
+//                if (console != null) {
+//                    char[] newPasswordArray = console.readPassword("Enter new password: ");
+//                    char[] confirmArray = console.readPassword("Confirm new password: ");
+//
+//                    if (Arrays.equals(newPasswordArray, confirmArray)) {
+//                        newPassword = new String(newPasswordArray);
+//                        break;
+//                    }
+//            } else {
+//                System.out.print("Enter new password: ");
+//                String password1 = scanner.nextLine();
+//
+//                System.out.print("Confirm new password: ");
+//                String password2 = scanner.nextLine();
+//
+//                if (password1.equals(password2)) {
+//                    newPassword = password1;
+//                    break;
+//                }
+//            }
+//            System.out.println("Passwords do not match. Please try again.");
+//        }
+//
+//        byte[] newSalt = generateRandomBytes(SALT_LENGTH);
+//        user.setPassword(hashPassword(newPassword, newSalt));
+//        userRepository.save(user);
+//        System.out.println("Password changed successfully.");
+//    }
+
     @Transactional
-    public void changePassword(Scanner scanner, User user) {
-        if (user == null) {
-            System.out.println("User not found.");
-            return;
-        }
-
-        Console console = System.console();
-        String currentPassword;
-
-        if (console != null) {
-            char[] currentPasswordArray = console.readPassword("Enter your current password: ");
-            currentPassword = new String(currentPasswordArray);
-        } else {
-            System.out.print("Enter your current password: ");
-            currentPassword = scanner.nextLine();
-        }
-
-        if (!verifyPassword(currentPassword, user.getPassword())) {
-            System.out.println("Incorrect password.");
-            return;
-        }
-
-        String newPassword;
-        while (true) {
-                // Use Console for secure input
-                if (console != null) {
-                    char[] newPasswordArray = console.readPassword("Enter new password: ");
-                    char[] confirmArray = console.readPassword("Confirm new password: ");
-
-                    if (Arrays.equals(newPasswordArray, confirmArray)) {
-                        newPassword = new String(newPasswordArray);
-                        break;
-                    }
-            } else {
-                System.out.print("Enter new password: ");
-                String password1 = scanner.nextLine();
-
-                System.out.print("Confirm new password: ");
-                String password2 = scanner.nextLine();
-
-                if (password1.equals(password2)) {
-                    newPassword = password1;
-                    break;
-                }
-            }
-            System.out.println("Passwords do not match. Please try again.");
-        }
-
-        byte[] newSalt = generateRandomBytes(SALT_LENGTH);
-        user.setPassword(hashPassword(newPassword, newSalt));
+    public void changePassword(String username, String newPassword){
+        User user = userRepository.findByUsername(username);
+        user.setPassword(newPassword);
         userRepository.save(user);
-        System.out.println("Password changed successfully.");
     }
 
     //Tracks login of the user
@@ -203,10 +218,9 @@ public class UserService {
 
     //Tracks logout of the user
     @Transactional
-    public void recordLogout(User user){
+    public void recordLogout(String username){
+        User user = userRepository.findByUsername(username);
         user.setLastLogout(LocalDateTime.now());
         userRepository.save(user);
-        System.out.println("You've been logged out.");
-        System.out.println("*******************************************************");
     }
 }

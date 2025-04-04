@@ -58,19 +58,19 @@ public class FileService {
         return fileNames;
     }
 
-    @Transactional
-    public List<String> displaySharedFiles(String ownerName){
-        User designatedUser = userRepository.findByUsername(ownerName);
-        List<File> sharedFiles = getSharedFilesWithUser(designatedUser);
-        List<String> sharedFileNames = new ArrayList<>();
-        if(sharedFiles.isEmpty()){
-            return sharedFileNames;
-        }
-        for(File file:sharedFiles){
-            sharedFileNames.add(file.getFileName());
-        }
-        return sharedFileNames;
-    }
+//    @Transactional
+//    public List<String> displaySharedFiles(String ownerName){
+//        User designatedUser = userRepository.findByUsername(ownerName);
+//        List<File> sharedFiles = getSharedFilesWithUser(designatedUser);
+//        List<String> sharedFileNames = new ArrayList<>();
+//        if(sharedFiles.isEmpty()){
+//            return sharedFileNames;
+//        }
+//        for(File file:sharedFiles){
+//            sharedFileNames.add(file.getFileName());
+//        }
+//        return sharedFileNames;
+//    }
 
     @Transactional
     public void deleteFile(String username, String filename){
@@ -87,10 +87,10 @@ public class FileService {
         fileRepository.save(file);
     }
 
-    @Transactional
-    public List<File> getSharedFilesWithUser(User designatedUser) {
-        return fileRepository.findBySharedWithContaining(designatedUser);
-    }
+//    @Transactional
+//    public List<File> getSharedFilesWithUser(User designatedUser) {
+//        return fileRepository.findBySharedWithContaining(designatedUser);
+//    }
 
 //    @Transactional
 //    public void shareFile(Scanner scanner, User owner){

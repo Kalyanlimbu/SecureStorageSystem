@@ -32,9 +32,8 @@ public class File {
 
     private LocalDateTime uploadTime;
 
-    @ElementCollection
     @Column(name = "File_Shared_With")
-    private List<User> sharedWith;
+    private List<String> sharedWith;
 
     // Constructors
     public File() {}
@@ -61,11 +60,11 @@ public class File {
     }
     public User getOwner() { return owner; }
 
-    public void setSharedWith(List<User> sharedWith) {
+    public void setSharedWith(List<String> sharedWith) {
         this.sharedWith = sharedWith;
     }
 
-    public void addSharedWith(User designatedUser) {
+    public void addSharedWith(String designatedUser) {
         if (sharedWith == null) {
             sharedWith = new ArrayList<>();
         }
@@ -73,7 +72,7 @@ public class File {
             sharedWith.add(designatedUser);
         }
     }
-    public List<User> getSharedWith() {
+    public List<String> getSharedWith() {
         return sharedWith;
     }
 

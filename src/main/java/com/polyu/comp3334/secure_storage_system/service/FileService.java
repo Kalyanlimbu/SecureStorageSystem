@@ -21,7 +21,6 @@ public class FileService {
     @Autowired
     private UserRepository userRepository;
 
-    // Upload file with encryption
     @Transactional
     public void uploadFile(String ownerName, String filename, byte[] encryptedData, byte[] salt, byte[] iv){
         User owner = userRepository.findByUsername(ownerName);
@@ -47,6 +46,7 @@ public class FileService {
     public List<File> getAllFilesByOwner(User owner) {
         return fileRepository.findByOwner(owner);
     }
+
     @Transactional
     public List<String> displayAccessibleFiles(String ownerName){
         User owner = userRepository.findByUsername(ownerName);
@@ -58,19 +58,36 @@ public class FileService {
         return fileNames;
     }
 
-//    @Transactional
-//    public List<String> displaySharedFiles(String ownerName){
-//        User designatedUser = userRepository.findByUsername(ownerName);
-//        List<File> sharedFiles = getSharedFilesWithUser(designatedUser);
-//        List<String> sharedFileNames = new ArrayList<>();
-//        if(sharedFiles.isEmpty()){
-//            return sharedFileNames;
-//        }
-//        for(File file:sharedFiles){
-//            sharedFileNames.add(file.getFileName());
-//        }
-//        return sharedFileNames;
+    @Transactional
+    public HashMap<String, String> getSharedFileNameAndOwnerName(String designatedUserName) {
+        List<File> files = fileRepository.findBySharedWithContaining(designatedUserName);
+        HashMap<String, String> sharedFileInfo = new HashMap<>();
+        if (files != null && !files.isEmpty()) {  // Changed from just null check
+            for (File file : files) {
+                sharedFileInfo.put(file.getFileName(), file.getOwner().getUsername());
+            }
+        }
+        return sharedFileInfo;
+    }
+
+    //    @Transactional
+//    public List<File> getSharedFilesWithUser(User designatedUser) {
+//        return fileRepository.findBySharedWithContaining(designatedUser);
 //    }
+
+    //    @Transactional
+    //    public List<String> displaySharedFiles(String ownerName){
+    //        User designatedUser = userRepository.findByUsername(ownerName);
+    //        List<File> sharedFiles = getSharedFilesWithUser(designatedUser);
+    //        List<String> sharedFileNames = new ArrayList<>();
+    //        if(sharedFiles.isEmpty()){
+    //            return sharedFileNames;
+    //        }
+    //        for(File file:sharedFiles){
+    //            sharedFileNames.add(file.getFileName());
+    //        }
+    //        return sharedFileNames;
+    //    }
 
     @Transactional
     public void deleteFile(String username, String filename){
@@ -92,35 +109,13 @@ public class FileService {
 //        return fileRepository.findBySharedWithContaining(designatedUser);
 //    }
 
-//    @Transactional
-//    public void shareFile(Scanner scanner, User owner){
-//        Boolean shareAuthorization = displayAccessibleFiles(owner.getUsername(), "sharingFiles");
-//        if(!shareAuthorization){
-//            System.out.println("Hence you are unable to share files.");
-//            return;
-//        }
-//        String fileNameToShare;
-//        File fileToShare;
-//        while(true){
-//            System.out.print("Please enter the file name you want to share and the file name should be in the list: ");
-//            fileNameToShare = scanner.nextLine();
-//            fileToShare = fileRepository.findByFileName(fileNameToShare);
-//            if(fileToShare != null) break;
-//            System.out.println("The file does not exist. Please enter a valid filename.");
-//        }
-//        String designatedUsername;
-//        User designatedUser;
-//        while(true){
-//            System.out.print("Please enter the username of the designated user with whom you would like to share your file: ");
-//            designatedUsername = scanner.nextLine();
-//            designatedUser = userRepository.findByUsername(designatedUsername);
-//            if(designatedUser != null) break;
-//            System.out.println("The username does not exists. Please enter a valid username.");
-//        }
-//        fileToShare.addSharedWith(designatedUser);
-//        fileRepository.save(fileToShare);
-//        System.out.println("The file " + fileToShare.getFileName() + " has been successfully shared to " + designatedUsername);
-//    }
+    @Transactional
+    public void shareFile(String ownerName, String fileToBeShared, String designatedUserName){
+        User owner = userRepository.findByUsername(ownerName);
+        File file = fileRepository.findByFileNameAndOwner(fileToBeShared, owner);
+        file.addSharedWith(designatedUserName);
+        fileRepository.save(file);
+    }
 
 
 }

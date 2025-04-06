@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -88,21 +89,23 @@ public class FileController {
     }
 
     @GetMapping("/displaySharedFiles")
-    private ResponseEntity<List<String>> displaySharedFiles(@RequestParam("username") String username) {
+    private ResponseEntity<HashMap<String, String>> displaySharedFiles(@RequestParam("username") String username) {
         try {
-            List<String> sharedFileNames = fileService.displayAccessibleFiles(username); // Assuming this returns shared filenames
-            if (sharedFileNames.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Collections.singletonList("You do not have any shared files by other users."));
+            HashMap<String, String> sharedFiles = fileService.getSharedFileNameAndOwnerName(username);
+            if (sharedFiles.isEmpty()) {
+                HashMap<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("No shared files, ", "You do not have any shared files by other users.");
+                return ResponseEntity.badRequest().body(errorResponse);
             }
-            return ResponseEntity.ok(sharedFileNames);
+            return ResponseEntity.ok(sharedFiles);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(Collections.singletonList("Invalid username provided."));
+            HashMap<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Invalid username provided.");
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
-    @GetMapping("/checkFilename")
+    @GetMapping("/checkFilenameForUser")
     private ResponseEntity<String> checkFileName(
             @RequestParam String filename,
             @RequestParam String username) {
@@ -113,7 +116,6 @@ public class FileController {
             return ResponseEntity.ok("Filename does not exist.");
         }
     }
-
 
     @DeleteMapping("/delete")
     private ResponseEntity<String> deleteFile(
@@ -137,6 +139,20 @@ public class FileController {
             return ResponseEntity.ok("The file has been successfully renamed as " + newFilename);
         }
         catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/sharingFile")
+    private ResponseEntity<String>shareFile(
+            @RequestParam String username,
+            @RequestParam String filename,
+            @RequestParam String designatedUserName){
+        try{
+            fileService.shareFile(username, filename, designatedUserName);
+            return ResponseEntity.ok(filename + " has been successfully shared to " + designatedUserName);
+        }
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

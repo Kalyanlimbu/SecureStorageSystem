@@ -27,6 +27,16 @@ public class UserController {
         return ResponseEntity.ok("Username is available.");
     }
 
+    @GetMapping("/getHashedPassword")
+    public ResponseEntity<String> getHashedPassword(@RequestParam("username") String username){
+        try{
+            User user = userRepository.findByUsername(username);
+            return ResponseEntity.ok(user.getPassword());
+        }catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Map<String, String> userData) {
         String username = userData.get("username");

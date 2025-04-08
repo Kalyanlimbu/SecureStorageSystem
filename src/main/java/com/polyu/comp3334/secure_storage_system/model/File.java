@@ -33,8 +33,8 @@ public class File {
     private LocalDateTime uploadTime;
 
     @ElementCollection
-    @CollectionTable(name = "file_shared_with", joinColumns = @JoinColumn(name = "file_id"))
-    @Column(name = "shared_with_username")
+    //@CollectionTable(name = "file_shared_with", joinColumns = @JoinColumn(name = "file_id"))
+    @Column
     private List<String> sharedWith;
 
     // Constructors

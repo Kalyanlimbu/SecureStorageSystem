@@ -32,10 +32,13 @@ public class File {
 
     private LocalDateTime uploadTime;
 
-    @ElementCollection
-    //@CollectionTable(name = "file_shared_with", joinColumns = @JoinColumn(name = "file_id"))
-    @Column
-    private List<String> sharedWith;
+    @ManyToMany
+    @JoinTable(
+            name = "file_shared_with",
+            joinColumns = @JoinColumn(name = "file_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> sharedWith;
 
     // Constructors
     public File() {}
@@ -62,11 +65,11 @@ public class File {
     }
     public User getOwner() { return owner; }
 
-    public void setSharedWith(List<String> sharedWith) {
+    public void setSharedWith(List<User> sharedWith) {
         this.sharedWith = sharedWith;
     }
 
-    public void addSharedWith(String designatedUser) {
+    public void addSharedWith(User designatedUser) {
         if (sharedWith == null) {
             sharedWith = new ArrayList<>();
         }
@@ -74,7 +77,7 @@ public class File {
             sharedWith.add(designatedUser);
         }
     }
-    public List<String> getSharedWith() {
+    public List<User> getSharedWith() {
         return sharedWith;
     }
 

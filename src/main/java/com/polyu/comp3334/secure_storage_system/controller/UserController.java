@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
-public class UserController {
+public class  UserController {
 
     @Autowired
     private UserRepository userRepository;
@@ -54,11 +54,12 @@ public class UserController {
     public ResponseEntity<String> authenticateUser(
             @RequestParam("username") String username,
             @RequestParam("password") String password) {
-        Boolean verify = userService.userAuthentication(username, password);
-        if (!verify) {
-            return ResponseEntity.badRequest().body("Invalid username or password.");
+        try{
+            userService.recordLogin(username, password);
+            return ResponseEntity.ok(username + ", you have logged in successfully.");
+        }catch(IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok(username + ", you have logged in successfully.");
     }
 
     @PostMapping("/logout")

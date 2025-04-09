@@ -130,15 +130,15 @@ public class UserService {
 //        }
 //        return Optional.empty();
 //    }
-    @Transactional
-    public Boolean userAuthentication(String username, String password){
-        User user = userRepository.findByUsername(username);
-        if (user != null && password.equals(user.getPassword())){
-            recordLogin(user);
-            return true;
-        }
-        return false;
-    }
+//    @Transactional
+//    public Boolean userAuthentication(String username, String password){
+//        User user = userRepository.findByUsername(username);
+//        if (user != null && password.equals(user.getPassword())){
+//            recordLogin(user);
+//            return true;
+//        }
+//        return false;
+//    }
 
     @Transactional
     // Need to implement OTP here.
@@ -211,9 +211,12 @@ public class UserService {
 
     //Tracks login of the user
     @Transactional
-    public void recordLogin(User user){
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
+    public void recordLogin(String username, String password){
+        User user = userRepository.findByUsername(username);
+        if(password.equals(user.getPassword())){
+            user.setLastLogin(LocalDateTime.now());
+            userRepository.save(user);
+        }
     }
 
     //Tracks logout of the user

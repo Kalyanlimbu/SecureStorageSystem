@@ -60,7 +60,8 @@ public class FileService {
 
     @Transactional
     public HashMap<String, String> getSharedFileNameAndOwnerName(String designatedUserName) {
-        List<File> files = fileRepository.findBySharedWithContaining(designatedUserName);
+        User designatedUser = userRepository.findByUsername(designatedUserName);
+        List<File> files = fileRepository.findBySharedWithContaining(designatedUser);
         HashMap<String, String> sharedFileInfo = new HashMap<>();
         if (files != null && !files.isEmpty()) {  // Changed from just null check
             for (File file : files) {
@@ -113,7 +114,8 @@ public class FileService {
     public void shareFile(String ownerName, String fileToBeShared, String designatedUserName){
         User owner = userRepository.findByUsername(ownerName);
         File file = fileRepository.findByFileNameAndOwner(fileToBeShared, owner);
-        file.addSharedWith(designatedUserName);
+        User designatedUser = userRepository.findByUsername(designatedUserName);
+        file.addSharedWith(designatedUser);
         fileRepository.save(file);
     }
 

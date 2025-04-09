@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
-@RequestMapping("/file")
+@RequestMapping("/api/file")
 public class FileController {
     @Autowired
     private FileRepository fileRepository;
@@ -185,4 +185,5 @@ public class FileController {
     }
 
 }
+
 

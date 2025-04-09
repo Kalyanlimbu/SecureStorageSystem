@@ -1,7 +1,9 @@
 package com.polyu.comp3334.secure_storage_system.controller;
 
+import com.polyu.comp3334.secure_storage_system.model.AuditLog;
 import com.polyu.comp3334.secure_storage_system.model.User;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
+import com.polyu.comp3334.secure_storage_system.service.AuditLogService;
 import com.polyu.comp3334.secure_storage_system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,13 +12,15 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 public class  UserController {
 
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private AuditLogService auditLogService;
 
     @PostMapping("/{username}/check")
     public ResponseEntity<String> existUsername(@PathVariable String username) {
@@ -56,6 +60,7 @@ public class  UserController {
             @RequestParam("password") String password) {
         try{
             userService.recordLogin(username, password);
+            auditLogService.logInLog(username);
             return ResponseEntity.ok(username + ", you have logged in successfully.");
         }catch(IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -66,6 +71,7 @@ public class  UserController {
     public ResponseEntity<String> logoutUser(@RequestParam("username") String username){
         try{
             userService.recordLogout(username);
+            auditLogService.logOutLog(username);
             return ResponseEntity.ok(username + "! you've been logged out.");
         } catch(IllegalArgumentException | IllegalStateException e){
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -84,3 +90,4 @@ public class  UserController {
         }
     }
 }
+

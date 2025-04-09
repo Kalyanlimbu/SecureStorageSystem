@@ -59,9 +59,9 @@ public class UserService {
         for (int i = 0; i < ITERATION_COUNT; i++) {
             hash = HmacSHA256(hmacKey, hash);
         }
-        
-        return Base64.getEncoder().encodeToString(hmacKey) + ":" 
-             + saltBase64 + ":" 
+
+        return Base64.getEncoder().encodeToString(hmacKey) + ":"
+             + saltBase64 + ":"
              + Base64.getEncoder().encodeToString(hash);
     }
 
@@ -227,3 +227,4 @@ public class UserService {
         userRepository.save(user);
     }
 }
+

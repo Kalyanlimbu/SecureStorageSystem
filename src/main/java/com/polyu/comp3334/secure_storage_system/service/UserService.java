@@ -249,5 +249,15 @@ public class UserService {
         user.setLastLogout(LocalDateTime.now());
         userRepository.save(user);
     }
+
+    @Transactional
+    public boolean isValidAdmin(String adminName, String adminPassword) {
+        User admin = userRepository.findByUsername(adminName);
+        if(admin == null) return false;
+        if(adminPassword.equals(admin.getPassword())){
+            return true;
+        }
+        return false;
+    }
 }
 

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,6 +23,24 @@ public class  UserController {
     private UserService userService;
     @Autowired
     private AuditLogService auditLogService;
+
+    @GetMapping("/getLogsForAdmin")
+    public ResponseEntity<List<String>> getLogsForAdmin(
+            @RequestParam("adminName") String adminName,
+            @RequestParam("adminPassword") String adminPassword) {
+        try {
+            // Add admin validation logic here (e.g., check credentials)
+//            if (!userService.isValidAdmin(adminName, adminPassword)) {
+//                return ResponseEntity.status(403).body(Collections.singletonList("Unauthorized access"));
+//            }
+            List<String> logs = auditLogService.getAllLogs();
+            return ResponseEntity.ok(logs.isEmpty() ? Collections.emptyList() : logs);
+        } catch (Exception e) {
+            // Log the exception for debugging
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Collections.singletonList("Error retrieving logs"));
+        }
+    }
 
     @PostMapping("/{username}/check")
     public ResponseEntity<String> existUsername(@PathVariable String username) {
@@ -60,7 +80,9 @@ public class  UserController {
             @RequestParam("password") String password) {
         try{
             userService.recordLogin(username, password);
-            auditLogService.logInLog(username);
+            if(!username.equals("admin")) {
+                auditLogService.logInLog(username);
+            }
             return ResponseEntity.ok(username + ", you have logged in successfully.");
         }catch(IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -71,7 +93,9 @@ public class  UserController {
     public ResponseEntity<String> logoutUser(@RequestParam("username") String username){
         try{
             userService.recordLogout(username);
-            auditLogService.logOutLog(username);
+            if(!username.equals("admin")) {
+                auditLogService.logOutLog(username);
+            }
             return ResponseEntity.ok(username + "! you've been logged out.");
         } catch(IllegalArgumentException | IllegalStateException e){
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -89,5 +113,7 @@ public class  UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 }
 

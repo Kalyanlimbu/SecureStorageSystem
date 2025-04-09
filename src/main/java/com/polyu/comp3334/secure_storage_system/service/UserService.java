@@ -16,6 +16,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.Scanner;
 
 //public class UserService implements UserDetailsService {
@@ -94,6 +95,28 @@ public class UserService {
     @Transactional
     public boolean usernameExists(String username){
         return userRepository.existsByUsername(username);
+    }
+
+    @Transactional
+    public void adminCreation() {
+        String adminPassword = "admin123";
+        byte[] salt = generateRandomBytes(SALT_LENGTH);
+        String hashedPassword = hashPassword(adminPassword, salt);
+
+        // Secure way to check for existing admin
+        User adminCheck = userRepository.findByUsername("admin");
+
+        if (adminCheck == null || !adminCheck.isAdmin()) {
+            User admin = new User(
+                    "admin",
+                    hashedPassword,
+                    "admin@gmail.com",
+                    LocalDateTime.now(),
+                    true
+            );
+
+            userRepository.save(admin);
+        }
     }
 
     @Transactional

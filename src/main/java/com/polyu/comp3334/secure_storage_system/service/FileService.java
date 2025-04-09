@@ -28,11 +28,11 @@ public class FileService {
     private AuditLogService auditLogService;
 
     @Transactional
-    public void uploadFile(String ownerName, String filename, byte[] encryptedData, byte[] salt, byte[] iv){
+    public void uploadFile(String ownerName, String filename, byte[] encryptedData, byte[] salt, byte[] iv, String signature){
         User owner = userRepository.findByUsername(ownerName);
         File file = new File(filename, encryptedData, owner, salt, iv);
         fileRepository.save(file);
-        auditLogService.uploadLog(ownerName, filename);
+        auditLogService.uploadLog(ownerName, filename, signature);
     }
 
     // Check filename existence according to owner
@@ -98,11 +98,11 @@ public class FileService {
     //    }
 
     @Transactional
-    public void deleteFile(String username, String filename){
+    public void deleteFile(String username, String filename, String signature){
         User owner = userRepository.findByUsername(username);
         File file = fileRepository.findByFileNameAndOwner(filename, owner);
         fileRepository.delete(file);
-        auditLogService.deleteLog(username, filename);
+        auditLogService.deleteLog(username, filename, signature);
     }
 
     @Transactional
@@ -119,13 +119,13 @@ public class FileService {
 //    }
 
     @Transactional
-    public void shareFile(String ownerName, String fileToBeShared, String designatedUserName){
+    public void shareFile(String ownerName, String fileToBeShared, String designatedUserName, String signature){
         User owner = userRepository.findByUsername(ownerName);
         File file = fileRepository.findByFileNameAndOwner(fileToBeShared, owner);
         User designatedUser = userRepository.findByUsername(designatedUserName);
         file.addSharedWith(designatedUser);
         fileRepository.save(file);
-        auditLogService.shareLog(ownerName, fileToBeShared, designatedUserName);
+        auditLogService.shareLog(ownerName, fileToBeShared, designatedUserName, signature);
     }
 
 

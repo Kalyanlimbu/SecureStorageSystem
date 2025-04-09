@@ -25,7 +25,9 @@ public class FileController {
     private FileService fileService;
 
     @PostMapping("/upload")
-    private ResponseEntity<String> uploadFile(@RequestBody byte[] payload) {
+    private ResponseEntity<String> uploadFile(
+            @RequestBody byte[] payload,
+            @RequestParam("signature") String signature) {
         try {
             ByteArrayInputStream input = new ByteArrayInputStream(payload);
             // Read username
@@ -42,7 +44,7 @@ public class FileController {
             int encryptedDataLen = bytesToInt(readBytes(input, 4));
             byte[] encryptedData = readBytes(input, encryptedDataLen);
 
-            fileService.uploadFile(username, filename, encryptedData, salt, iv);
+            fileService.uploadFile(username, filename, encryptedData, salt, iv, signature);
             return ResponseEntity.ok(filename + " has been successfully uploaded.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error uploading file: " + e.getMessage());
@@ -76,7 +78,8 @@ public class FileController {
     }
 
     @GetMapping("/displayFiles")
-    private ResponseEntity<List<String>> displayFiles(@RequestParam("username") String username) {
+    private ResponseEntity<List<String>> displayFiles(
+            @RequestParam("username") String username) {
         try {
             List<String> fileNames= fileService.displayAccessibleFiles(username);
             if (fileNames.isEmpty()) {
@@ -120,9 +123,10 @@ public class FileController {
     @DeleteMapping("/delete")
     private ResponseEntity<String> deleteFile(
         @RequestParam String filename,
-        @RequestParam String username){
+        @RequestParam String username,
+        @RequestParam("signature") String signature){
         try{
-            fileService.deleteFile(username, filename);
+            fileService.deleteFile(username, filename, signature);
             return ResponseEntity.ok(filename + " has been successfully deleted.");
         }catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -147,9 +151,10 @@ public class FileController {
     private ResponseEntity<String>shareFile(
             @RequestParam String username,
             @RequestParam String filename,
-            @RequestParam String designatedUserName){
+            @RequestParam String designatedUserName,
+            @RequestParam("signature") String signature){
         try{
-            fileService.shareFile(username, filename, designatedUserName);
+            fileService.shareFile(username, filename, designatedUserName, signature);
             return ResponseEntity.ok(filename + " has been successfully shared to " + designatedUserName);
         }
         catch (Exception e) {

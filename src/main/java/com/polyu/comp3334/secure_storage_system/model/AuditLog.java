@@ -18,16 +18,17 @@ public class AuditLog {
     private String action;
     @Column(nullable = false)
     private String details;
-    //private String signature;
+    @Column(nullable = false)
+    private String signature;
 
     // Constructors, getters, setters
     public AuditLog() {}
-    public AuditLog(LocalDateTime timestamp, String username, String action, String details) {
+    public AuditLog(LocalDateTime timestamp, String username, String action, String details, String signature) {
         this.timestamp = timestamp;
         this.username = username;
         this.action = action;
         this.details = details;
-        //this.signature = signature;
+        this.signature = signature;
     }
 
     // Getters and setters
@@ -40,6 +41,18 @@ public class AuditLog {
     public void setAction(String action) { this.action = action; }
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
-//    public String getSignature() { return signature; }
-//    public void setSignature(String signature) { this.signature = signature; }
+    public String getSignature() { return signature; }
+    public void setSignature(String signature) { this.signature = signature; }
+
+    @Override
+    public String toString() {
+        return "AuditLog{" +
+                "action='" + action + '\'' +
+                ", id=" + id +
+                ", timestamp=" + timestamp +
+                ", username='" + username + '\'' +
+                ", details='" + details + '\'' +
+                ", signature='" + signature + '\'' +
+                '}';
+    }
 }

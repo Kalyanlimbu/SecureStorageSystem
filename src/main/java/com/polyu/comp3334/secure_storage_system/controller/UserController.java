@@ -77,12 +77,14 @@ public class  UserController {
     @PostMapping("/login")
     public ResponseEntity<String> authenticateUser(
             @RequestParam("username") String username,
-            @RequestParam("password") String password) {
+            @RequestParam("password") String password,
+            @RequestParam("signature") String signature) {
         try{
             userService.recordLogin(username, password);
-            if(!username.equals("admin")) {
-                auditLogService.logInLog(username);
-            }
+            auditLogService.logInLog(username, signature);
+//            if(!username.equals("admin")) {
+//                auditLogService.logInLog(username, signature);
+//            }
             return ResponseEntity.ok(username + ", you have logged in successfully.");
         }catch(IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -90,12 +92,16 @@ public class  UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logoutUser(@RequestParam("username") String username){
+    public ResponseEntity<String> logoutUser(
+            @RequestParam("username") String username,
+            @RequestParam("signature") String signature
+            ){
         try{
             userService.recordLogout(username);
-            if(!username.equals("admin")) {
-                auditLogService.logOutLog(username);
-            }
+            auditLogService.logOutLog(username, signature);
+//            if(!username.equals("admin")) {
+//                auditLogService.logOutLog(username, signature);
+//            }
             return ResponseEntity.ok(username + "! you've been logged out.");
         } catch(IllegalArgumentException | IllegalStateException e){
             return ResponseEntity.badRequest().body(e.getMessage());

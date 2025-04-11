@@ -1,5 +1,5 @@
 package com.polyu.comp3334.secure_storage_system.service;
-
+import org.springframework.beans.factory.annotation.Value;
 import com.polyu.comp3334.secure_storage_system.model.User;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -94,10 +94,16 @@ public class UserService {
     public boolean usernameExists(String username){
         return userRepository.existsByUsername(username);
     }
+    @Value("${ADMIN_USERNAME}")
+    private String AdminUsername;
+    @Value("${ADMIN_PASSWORD}")
+    private String AdminPassword;
+    @Value("${ADMIN_EMAIL}")
+    private String AdminEmail;
 
-    @Transactional
     public void adminCreation() {
-        String adminName = "admin", adminPassword = "admin123", adminEmail = "admin@gmail.com";
+
+        String adminName = AdminUsername, adminPassword = AdminPassword, adminEmail = AdminEmail;
         byte[] salt = generateRandomBytes(SALT_LENGTH);
         String hashedPassword = hashPassword(adminPassword, salt);
         // Secure way to check for existing admin

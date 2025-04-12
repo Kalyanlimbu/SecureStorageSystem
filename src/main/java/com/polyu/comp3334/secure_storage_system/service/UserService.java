@@ -1,6 +1,8 @@
 package com.polyu.comp3334.secure_storage_system.service;
 
+import com.polyu.comp3334.secure_storage_system.model.PwdResetToken;
 import com.polyu.comp3334.secure_storage_system.model.User;
+import com.polyu.comp3334.secure_storage_system.repository.PwdResetTokenRepository;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,9 +166,11 @@ public class UserService {
 //    }
 
     @Transactional
-    // Need to implement OTP here.
+
     public void forgotPassword(String username, String email){
-        var user = userRepository.findByUsername(username);
+        // let's call the required functions here
+
+
 
     }
 

@@ -35,56 +35,54 @@ public class UserService {
     private static final int KEY_LENGTH = 32;
     private static final int ITERATION_COUNT = 10000;
 
-
-    private byte[] generateRandomBytes(int length) {
+    private static byte[] generateRandomBytes(int length) {
         byte[] bytes = new byte[length];
         new SecureRandom().nextBytes(bytes);
         return bytes;
     }
 
-    private byte[] HmacSHA256(byte[] data, byte[] key) {
+    private static byte[] HmacSHA256(byte[] data, byte[] key) {
         try {
-            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            SecretKeySpec secretKey = new SecretKeySpec(key, HMAC_ALGORITHM);
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance(HMAC_ALGORITHM);
+            javax.crypto.spec.SecretKeySpec secretKey = new javax.crypto.spec.SecretKeySpec(key, HMAC_ALGORITHM);
             mac.init(secretKey);
             return mac.doFinal(data);
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {;
+        } catch (java.security.NoSuchAlgorithmException | java.security.InvalidKeyException e) {
             throw new RuntimeException("HMAC256 Computation failed", e);
         }
     }
 
-    private String hashPassword(String password, byte[] salt){
+    private static String hashPassword(String password, byte[] salt) {
         byte[] hmacKey = generateRandomBytes(KEY_LENGTH);
         String saltBase64 = Base64.getEncoder().encodeToString(salt);
-        //Initial hash
-        byte[] hash = HmacSHA256(hmacKey, (password + saltBase64).getBytes(StandardCharsets.UTF_8));
-        //Iterate the hash
+        byte[] hash = HmacSHA256((password + saltBase64).getBytes(), hmacKey);
         for (int i = 0; i < ITERATION_COUNT; i++) {
-            hash = HmacSHA256(hmacKey, hash);
+            hash = HmacSHA256(hash, hmacKey);
         }
 
-        return Base64.getEncoder().encodeToString(hmacKey) + ":"
-             + saltBase64 + ":"
-             + Base64.getEncoder().encodeToString(hash);
+        return Base64.getEncoder().encodeToString(hmacKey) + ":" + saltBase64 + ":" + Base64.getEncoder().encodeToString(hash);
     }
 
     private boolean verifyPassword(String password, String storedHash) {
         String[] parts = storedHash.split(":");
         if (parts.length != 3) return false;
+        String hmacKeyEncoded = parts[0].trim();
+        String saltEncoded = parts[1].trim();
+        String hashEncoded = parts[2].trim();
 
-        byte[] hmacKey = Base64.getDecoder().decode(parts[0]);
-        byte[] salt = Base64.getDecoder().decode(parts[1]);
-        byte[] originalHash = Base64.getDecoder().decode(parts[2]);
-
+        byte[] hmacKey = Base64.getDecoder().decode(hmacKeyEncoded);
+        byte[] salt = Base64.getDecoder().decode(saltEncoded);
+        byte[] originalHash = Base64.getDecoder().decode(hashEncoded);
         // Recompute the hash
         String saltBase64 = Base64.getEncoder().encodeToString(salt);
-        byte[] computedHash = HmacSHA256(hmacKey, (password + saltBase64).getBytes(StandardCharsets.UTF_8));
+        byte[] computedHash = HmacSHA256((password + saltBase64).getBytes(), hmacKey);
 
         for (int i = 0; i < ITERATION_COUNT; i++) {
-            computedHash = HmacSHA256(hmacKey, computedHash);
+            computedHash = HmacSHA256(computedHash, hmacKey);
         }
         return slowEquals(originalHash, computedHash);
     }
+
 // Time comparison to prevent timing attacks
     private boolean slowEquals(byte[] a, byte[] b) {
         int diff = a.length ^ b.length;
@@ -98,25 +96,22 @@ public class UserService {
     public boolean usernameExists(String username){
         return userRepository.existsByUsername(username);
     }
+    @Value("${ADMIN_USERNAME}")
+    private String AdminUsername;
+    @Value("${ADMIN_PASSWORD}")
+    private String AdminPassword;
+    @Value("${ADMIN_EMAIL}")
+    private String AdminEmail;
 
-    @Transactional
     public void adminCreation() {
-        String adminPassword = "admin123";
+
+        String adminName = AdminUsername, adminPassword = AdminPassword, adminEmail = AdminEmail;
         byte[] salt = generateRandomBytes(SALT_LENGTH);
         String hashedPassword = hashPassword(adminPassword, salt);
-
         // Secure way to check for existing admin
         User adminCheck = userRepository.findByUsername("admin");
-
         if (adminCheck == null || !adminCheck.isAdmin()) {
-            User admin = new User(
-                    "admin",
-                    hashedPassword,
-                    "admin@gmail.com",
-                    LocalDateTime.now(),
-                    true
-            );
-
+            User admin = new User(adminName, hashedPassword, adminEmail, LocalDateTime.now(), true);
             userRepository.save(admin);
         }
     }

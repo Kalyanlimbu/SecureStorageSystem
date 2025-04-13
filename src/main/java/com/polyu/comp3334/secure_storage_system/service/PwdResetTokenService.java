@@ -7,31 +7,27 @@ import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+@Service
 public class PwdResetTokenService {
     private static final long PIN_EXPIRATION_MINUTES = 15;
 
     private final UserRepository userRepository;
     private final PwdResetTokenRepository tokenRepository;
     private final JavaMailSender mailSender;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public PwdResetTokenService(UserRepository userRepository,
                                 PwdResetTokenRepository tokenRepository,
-                                JavaMailSender mailSender,
-                                PasswordEncoder passwordEncoder) {
+                                JavaMailSender mailSender) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.mailSender = mailSender;
-        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -55,30 +51,33 @@ public class PwdResetTokenService {
                 pin,
                 LocalDateTime.now().plusMinutes(PIN_EXPIRATION_MINUTES)
         );
-        tokenRepository.save(token);
+        tokenRepository.save(token); // maybe angad you can help me hash this token so i don't store its plain text in the server
 
         // send email
-        SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setTo(user.getEmail());
-        msg.setSubject("Your Password Reset Verification Code");
-        msg.setText(
-                "Your one‑time verification code is: " + pin +
-                        "\nIt will expire in " + PIN_EXPIRATION_MINUTES + " minutes."
-        );
-        mailSender.send(msg);
-        return pin;
+        try {
+            SimpleMailMessage msg = new SimpleMailMessage();
+            String to = user.getEmail();
+            msg.setFrom ("sidharth.kts05@gmail.com");
+            msg.setTo(to);
+            msg.setSubject("Your Password Reset Verification Code");
+            msg.setText(
+                    "Your one‑time verification code is: " + pin +
+                            "\nIt will expire in " + PIN_EXPIRATION_MINUTES + " minutes."
+            );
+            mailSender.send(msg);
+            return pin;
+        }catch (Exception e){
+            throw new IllegalArgumentException("Issue with sending email: " + e.getMessage());
+        }
     }
 
     /**
-     * Step 2: User submits email + PIN + new password.
-     * We validate the PIN, reset password, mark PIN used.
+     * Step 2: User submits email + PIN + new password.
+     * We validate the PIN, mark PIN used.
      */
-    public void resetPassword(String email, String pin, String newPassword) {
-        User user;
-        try{user = userRepository.findByEmail(email);}
-        catch (Exception e){throw new IllegalArgumentException("Email does not match any user records\n");}
-
-        PwdResetToken token = tokenRepository.findByToken(pin)
+    public void tokenAuthenticate(String username, String pin) {
+        User user = userRepository.findByUsername(username);
+        PwdResetToken token = tokenRepository.findByToken(pin) // the pin used here is user input, might have to hash to check if the input matches token (if we hash the token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid verification code"));
 
         if (token.isUsed()
@@ -86,11 +85,6 @@ public class PwdResetTokenService {
                 || !token.getUser().getUsername().equals(user.getUsername())) {
             throw new IllegalArgumentException("Invalid or expired verification code");
         }
-
-        // update and hash new password [ADD LOGIC HERE]
-//        user.setPassword(passwordEncoder.encode(newPassword));
-//        userRepository.save(user);
-
         // mark PIN as used
         token.setUsed(true);
         tokenRepository.save(token);

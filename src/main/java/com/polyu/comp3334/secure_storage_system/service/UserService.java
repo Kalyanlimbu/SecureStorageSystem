@@ -1,11 +1,12 @@
 package com.polyu.comp3334.secure_storage_system.service;
 
-import com.polyu.comp3334.secure_storage_system.model.PwdResetToken;
+//import com.polyu.comp3334.secure_storage_system.model.PwdResetToken;
 import com.polyu.comp3334.secure_storage_system.model.User;
-import com.polyu.comp3334.secure_storage_system.repository.PwdResetTokenRepository;
+//import com.polyu.comp3334.secure_storage_system.repository.PwdResetTokenRepository;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -161,7 +162,6 @@ public class UserService {
 //    }
 
     @Transactional
-
     public void forgotPassword(String username, String email){
         // let's call the required functions here
 

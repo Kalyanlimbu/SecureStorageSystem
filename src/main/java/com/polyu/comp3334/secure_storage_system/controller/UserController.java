@@ -4,6 +4,7 @@ import com.polyu.comp3334.secure_storage_system.model.AuditLog;
 import com.polyu.comp3334.secure_storage_system.model.User;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
 import com.polyu.comp3334.secure_storage_system.service.AuditLogService;
+import com.polyu.comp3334.secure_storage_system.service.PwdResetTokenService;
 import com.polyu.comp3334.secure_storage_system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -107,7 +108,32 @@ public class  UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @Autowired
+    private PwdResetTokenService authservice;
+    @PostMapping("/initiate-forget-password")
+    public ResponseEntity<String> getToken (@RequestParam("username") String username){
+        try{
+            User user = userRepository.findByUsername(username);
+            String email = user.getEmail();
+            authservice.emailAuthenticate(username, email);
+            return ResponseEntity.ok("Email verification code has been sent to: " + email);
+        }catch (IllegalArgumentException | IllegalStateException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("something wrong when sending. check server.");
+        }
+    }
+    @PostMapping("/submit-token-password")
+    public ResponseEntity<String> submitToken(@RequestBody Map<String, String> userData) {
+        String username = userData.get("username");
+        String pin = userData.get("pin");
+        //String newPassword = userData.get("newPassword");
+        try {
+            authservice.tokenAuthenticate(username, pin);
+            return ResponseEntity.ok("Multifactor authentication successful");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @PutMapping("/changePassword")
     public ResponseEntity<String> changePassword(
             @RequestParam("username") String username,

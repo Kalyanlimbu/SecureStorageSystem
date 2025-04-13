@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "pwdresettokens")
@@ -39,14 +40,18 @@ public class PwdResetToken {
     }
 
     public void setUsed(boolean b) {
+        this.used = true;
     }
 
     public boolean isUsed() {
+        return this.used;
     }
 
     public Instant getExpiryDate() {
+        return this.expiryDate.toInstant(ZoneOffset.UTC);
     }
 
-    public AuditLog getUser() {
+    public User getUser() {
+        return this.user;
     }
 }

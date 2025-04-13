@@ -14,7 +14,7 @@ public class PwdResetToken {
     private long id;
 
     /** 6 digit OTP pin **/
-    @Column(nullable = false, length = 6)
+    @Column(nullable = false)
     private String token;
 
     /** join column. I think we still using username as id. check **/
@@ -50,6 +50,7 @@ public class PwdResetToken {
     public Instant getExpiryDate() {
         return this.expiryDate.toInstant(ZoneOffset.UTC);
     }
+    public String getToken() { return token; }
 
     public User getUser() {
         return this.user;

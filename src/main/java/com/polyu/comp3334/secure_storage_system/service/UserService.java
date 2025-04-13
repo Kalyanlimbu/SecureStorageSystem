@@ -1,6 +1,5 @@
 package com.polyu.comp3334.secure_storage_system.service;
 
-//import com.polyu.comp3334.secure_storage_system.model.PwdResetToken;
 import com.polyu.comp3334.secure_storage_system.model.User;
 //import com.polyu.comp3334.secure_storage_system.repository.PwdResetTokenRepository;
 import com.polyu.comp3334.secure_storage_system.repository.UserRepository;
@@ -110,7 +109,7 @@ public class UserService {
         byte[] salt = generateRandomBytes(SALT_LENGTH);
         String hashedPassword = hashPassword(adminPassword, salt);
         // Secure way to check for existing admin
-        User adminCheck = userRepository.findByUsername("admin");
+        User adminCheck = userRepository.findByUsername(AdminUsername);
         if (adminCheck == null || !adminCheck.isAdmin()) {
             User admin = new User(adminName, hashedPassword, adminEmail, LocalDateTime.now(), true);
             userRepository.save(admin);

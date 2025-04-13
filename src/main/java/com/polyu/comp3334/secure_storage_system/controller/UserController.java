@@ -115,7 +115,7 @@ public class  UserController {
         try{
             User user = userRepository.findByUsername(username);
             String email = user.getEmail();
-            authservice.emailAuthenticate(username, email);
+            authservice.emailAuthenticate(username, user.getEmail());
             return ResponseEntity.ok("Email verification code has been sent to: " + email);
         }catch (IllegalArgumentException | IllegalStateException e) {
             e.printStackTrace();

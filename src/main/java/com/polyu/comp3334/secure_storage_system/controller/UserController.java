@@ -30,10 +30,6 @@ public class  UserController {
             @RequestParam("adminName") String adminName,
             @RequestParam("adminPassword") String adminPassword) {
         try {
-            // Add admin validation logic here (e.g., check credentials)
-//            if (!userService.isValidAdmin(adminName, adminPassword)) {
-//                return ResponseEntity.status(403).body(Collections.singletonList("Unauthorized access"));
-//            }
             List<String> logs = auditLogService.getAllLogs();
             return ResponseEntity.ok(logs.isEmpty() ? Collections.emptyList() : logs);
         } catch (Exception e) {
@@ -83,9 +79,7 @@ public class  UserController {
         try{
             userService.recordLogin(username, password);
             auditLogService.logInLog(username, signature);
-//            if(!username.equals("admin")) {
-//                auditLogService.logInLog(username, signature);
-//            }
+
             return ResponseEntity.ok(username + ", you have logged in successfully.");
         }catch(IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -100,9 +94,7 @@ public class  UserController {
         try{
             userService.recordLogout(username);
             auditLogService.logOutLog(username, signature);
-//            if(!username.equals("admin")) {
-//                auditLogService.logOutLog(username, signature);
-//            }
+
             return ResponseEntity.ok(username + "! you've been logged out.");
         } catch(IllegalArgumentException | IllegalStateException e){
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -126,7 +118,6 @@ public class  UserController {
     public ResponseEntity<String> submitToken(@RequestBody Map<String, String> userData) {
         String username = userData.get("username");
         String pin = userData.get("pin");
-        //String newPassword = userData.get("newPassword");
         try {
             authservice.tokenAuthenticate(username, pin);
             return ResponseEntity.ok("Multifactor authentication successful");

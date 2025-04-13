@@ -21,7 +21,6 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.Scanner;
 
-//public class UserService implements UserDetailsService {
 @Service
 public class UserService {
 

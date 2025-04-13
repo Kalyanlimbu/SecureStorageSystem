@@ -59,7 +59,11 @@ DB_PASSWORD=your_mysql_password
 ADMIN_USERNAME=admin
 ADMIN_EMAIL=admin@gmail.com
 ADMIN_PASSWORD=admin@123
+MFA_EMAIL=sidharth.kts05@gmail.com  
+MFA_EMAIL_PORT=587
+MFA_PASSWORD=mpcg yvvo hznh dluq
 ```
+The MFA credentials can be changed after enabling 2FA and allowing smtp protocol from your email provider. The DB_USER and DB_PASSWORD should be configured upon install of MySQL Server on Windows or *nix based systems.
 ## Running the server
 Run the server in bash using maven with the following command:
 
@@ -67,3 +71,5 @@ Run the server in bash using maven with the following command:
 mvn clean compile exec:java
 ```
 
+This is applicable for systems with Maven binary , preferably on Linux or MacOSX based systems as tested by us. 
+On Windows, the most convenient way will be to open the Editor/IDE of your choice and complete project configuration. On VSCode, download the Extension Pack for Java, which includes the Maven extension and download the needed JDK. On IntelliJ, you can complete the Project Structure configuration. After this, you can run the main file of the project to initiate maven springboot build:run.  
